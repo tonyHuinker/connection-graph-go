@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -99,6 +100,10 @@ func main() {
 	error = json.NewDecoder(resp.Body).Decode(&metrics)
 	if error != nil {
 		fmt.Println("Hmm... problem with the json decoding... " + error.Error())
+		htmlData, _ := ioutil.ReadAll(resp.Body)
+		w, _ := os.Create("bad_input.json")
+		io.WriteString(w, string(htmlData))
+		w.Close()
 		os.Exit(-1)
 	}
 	fmt.Println("Made metrics call and saved metrics successfully")
