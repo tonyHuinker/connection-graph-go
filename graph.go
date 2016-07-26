@@ -45,18 +45,23 @@ func addToGraphData(GraphData map[int]source, metrics ehop.MetricsTotalByGroup) 
 		for _, second := range stat.Values {
 			for _, value := range second {
 				for _, peer := range value.Value {
-					var hold2 connection
-					hold2.Port = value.Key.Str
-					if peer.Key.Host != "" {
-						hold2.Host = peer.Key.Host
-					} else {
-						hold2.Host = "No Host Saved"
+					fmt.Println(value.Key.Str)
+					if value.Key.Str == "HostedServices" {
+						fmt.Println("Found one!")
+						var hold2 connection
+						hold2.Port = peer.Key.Str
+						/*if peer.Key.Host != "" {
+							hold2.Host = peer.Key.Host
+						} else {
+							hold2.Host = "No Host Saved"
+						}*/
+						hold2.Bytes = peer.Value
+						//hold2.IP = peer.Key.Addr
+						hold3 := GraphData[stat.OID]
+						hold3.Connect = append(hold3.Connect, hold2)
+						GraphData[stat.OID] = hold3
+
 					}
-					hold2.Bytes = peer.Value
-					hold2.IP = peer.Key.Addr
-					hold3 := GraphData[stat.OID]
-					hold3.Connect = append(hold3.Connect, hold2)
-					GraphData[stat.OID] = hold3
 				}
 			}
 		}
@@ -118,7 +123,8 @@ func main() {
 
 			//Create req body for metrics/totalbyobject call
 			fmt.Println("Making request for 500 devices, there are " + strconv.Itoa(len(deviceIDArray)-i) + " devices left")
-			query := `{ "cycle": "1hr", "from": ` + strconv.Itoa(lookback) + `, "metric_category": "app_detail", "metric_specs": [ { "name": "bytes_in" }, { "name": "bytes_out" } ], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
+			query := `{ "cycle": "auto", "from": -600 , "metric_category": "custom_detail", "metric_specs": [ { "name": "HostedServices" }], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
+			//query := `{ "cycle": "auto", "from": ` + strconv.Itoa(lookback) + `, "metric_category": "custom_detail", "metric_specs": [ { "name": "HostedServices" }], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
 			resp, error = ehop.CreateEhopRequest("POST", "metrics/totalbyobject", query, myhop)
 			//Make call
 			defer resp.Body.Close()
@@ -144,7 +150,9 @@ func main() {
 
 	fmt.Println("Making last request for devices")
 	//Create req body for metrics/totalbyobject call
-	query := `{ "cycle": "1hr", "from": ` + strconv.Itoa(lookback) + `, "metric_category": "app_detail", "metric_specs": [ { "name": "bytes_in" }, { "name": "bytes_out" } ], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
+	query := `{ "cycle": "auto", "from": -600 , "metric_category": "custom_detail", "metric_specs": [ { "name": "HostedServices" }], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
+	//query := `{ "cycle": "auto", "from": ` + strconv.Itoa(lookback) + `, "metric_category": "custom_detail", "metric_specs": [ { "name": "HostedServices" }], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
+	//query := `{ "cycle": "1hr", "from": ` + strconv.Itoa(lookback) + `, "metric_category": "app_detail", "metric_specs": [ { "name": "bytes_in" }, { "name": "bytes_out" } ], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
 	resp, error = ehop.CreateEhopRequest("POST", "metrics/totalbyobject", query, myhop)
 	//Make call
 	defer resp.Body.Close()
@@ -170,11 +178,13 @@ func main() {
 
 	f, _ := os.Create("graphCSV.csv")
 	//Go through GraphData object.. and print stuff to screen and output to CSV
-	io.WriteString(f, "Machine 1 IP, Machine 1 Hostname, Protocol, Machine 2 IP, Machine 2 Hostname, Bytes\n")
+	io.WriteString(f, "Machine 1 IP, Machine 1 Hostname, Port\n")
 	for id := range GraphData {
+		io.WriteString(f, GraphData[id].IP+","+GraphData[id].Hostname)
 		for _, nextion := range GraphData[id].Connect {
-			io.WriteString(f, GraphData[id].IP+","+GraphData[id].Hostname+","+nextion.Port+","+nextion.IP+","+nextion.Host+","+strconv.Itoa(nextion.Bytes)+"\n")
+			io.WriteString(f, ","+nextion.Port+","+strconv.Itoa(nextion.Bytes))
 		}
+		io.WriteString(f, "\n")
 	}
 	f.Close()
 }
