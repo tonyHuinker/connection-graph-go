@@ -45,18 +45,10 @@ func addToGraphData(GraphData map[int]source, metrics ehop.MetricsTotalByGroup) 
 		for _, second := range stat.Values {
 			for _, value := range second {
 				for _, peer := range value.Value {
-					fmt.Println(value.Key.Str)
 					if value.Key.Str == "HostedServices" {
-						fmt.Println("Found one!")
 						var hold2 connection
 						hold2.Port = peer.Key.Str
-						/*if peer.Key.Host != "" {
-							hold2.Host = peer.Key.Host
-						} else {
-							hold2.Host = "No Host Saved"
-						}*/
 						hold2.Bytes = peer.Value
-						//hold2.IP = peer.Key.Addr
 						hold3 := GraphData[stat.OID]
 						hold3.Connect = append(hold3.Connect, hold2)
 						GraphData[stat.OID] = hold3
