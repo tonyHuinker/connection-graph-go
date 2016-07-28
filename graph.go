@@ -115,7 +115,7 @@ func main() {
 
 			//Create req body for metrics/totalbyobject call
 			fmt.Println("Making request for 500 devices, there are " + strconv.Itoa(len(deviceIDArray)-i) + " devices left")
-			query := `{ "cycle": "auto", "from": -600 , "metric_category": "custom_detail", "metric_specs": [ { "name": "HostedServices" }], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
+			query := `{ "cycle": "auto", "from": -86400000 , "metric_category": "custom_detail", "metric_specs": [ { "name": "HostedServices" }], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
 			//query := `{ "cycle": "auto", "from": ` + strconv.Itoa(lookback) + `, "metric_category": "custom_detail", "metric_specs": [ { "name": "HostedServices" }], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
 			resp, error = ehop.CreateEhopRequest("POST", "metrics/totalbyobject", query, myhop)
 			//Make call
@@ -142,7 +142,7 @@ func main() {
 
 	fmt.Println("Making last request for devices")
 	//Create req body for metrics/totalbyobject call
-	query := `{ "cycle": "auto", "from": -600 , "metric_category": "custom_detail", "metric_specs": [ { "name": "HostedServices" }], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
+	query := `{ "cycle": "auto", "from": -86400000 , "metric_category": "custom_detail", "metric_specs": [ { "name": "HostedServices" }], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
 	//query := `{ "cycle": "auto", "from": ` + strconv.Itoa(lookback) + `, "metric_category": "custom_detail", "metric_specs": [ { "name": "HostedServices" }], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
 	//query := `{ "cycle": "1hr", "from": ` + strconv.Itoa(lookback) + `, "metric_category": "app_detail", "metric_specs": [ { "name": "bytes_in" }, { "name": "bytes_out" } ], "object_ids":` + deviceStringArray + `, "object_type": "device", "until": 0 } } }`
 	resp, error = ehop.CreateEhopRequest("POST", "metrics/totalbyobject", query, myhop)
@@ -170,7 +170,7 @@ func main() {
 
 	f, _ := os.Create("graphCSV.csv")
 	//Go through GraphData object.. and print stuff to screen and output to CSV
-	io.WriteString(f, "Machine 1 IP, Machine 1 Hostname, Port\n")
+	io.WriteString(f, "Machine 1 IP, Machine 1 Hostname, Port, Connection Count, Port, Connection Count, Port, Connection Count, Port, Connection Count\n")
 	for id := range GraphData {
 		io.WriteString(f, GraphData[id].IP+","+GraphData[id].Hostname)
 		for _, nextion := range GraphData[id].Connect {
